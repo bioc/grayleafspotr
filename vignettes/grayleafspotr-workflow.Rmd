@@ -20,18 +20,16 @@ knitr::opts_chunk$set(
 )
 library(grayleafspotr)
 
-# Whether the basilisk-managed Python pipeline is available in this build
-# environment. This is a cheap presence check (it does not itself trigger
-# environment provisioning); the chunks below additionally wrap the actual
-# pipeline call in tryCatch() so a `basilisk`-present-but-broken environment
-# degrades gracefully instead of failing the vignette build.
+# Gate the pipeline chunks with a presence check. For the default environment,
+# this checks that basilisk is installed without provisioning Python.
+# Errors from an evaluated pipeline call stop the vignette build.
 py_ok <- tryCatch(
   grayleafspot_python_available(engine_model = "localunet"),
   error = function(e) FALSE
 )
 ```
 
-## Abstract
+## Abstract {-}
 
 Gray leaf spot (GLS) is a fungal disease caused by the ascomycete
 *Magnaporthe oryzae*, an economically important pathogen best known as the
@@ -70,7 +68,7 @@ reproducible pipeline.
 
 ---
 
-## 1. Package overview
+## Package overview
 
 ### What the package does
 
@@ -82,11 +80,11 @@ Given a folder of plate photographs, `grayleafspotr`:
 3. **Extracts per-image features**: area (mm²), equivalent diameter,
    circularity, eccentricity, edge roughness, crack coverage, texture
    entropy, and a radial intensity profile.
-4. **Returns a tidy result** object — a `grayleafspot_run` — containing a
+4. **Returns a tidy result** object (`grayleafspot_run`) containing a
    data frame indexed by filename and imaging day.
-5. **Provides template plots** — one function per figure, all returning
+5. **Provides template plots**, one function per figure, all returning
    `ggplot2` objects ready for further customisation.
-6. **Supports visual QC** — `plot_grayleafspot_overlay()` draws the detected
+6. **Supports visual QC**: `plot_grayleafspot_overlay()` draws the detected
    ROIs on the source image via `EBImage`.
 
 ### Input requirements
@@ -130,7 +128,7 @@ Template ggplot2 plots  /  EBImage ROI overlay  /  tidy data  /  custom analysis
 
 ---
 
-## 2. Installation
+## Installation
 
 Install from Bioconductor:
 
@@ -140,44 +138,31 @@ if (!requireNamespace("BiocManager", quietly = TRUE))
 BiocManager::install("grayleafspotr")
 ```
 
-Python dependencies (NumPy, OpenCV, PyTorch, scikit-image, etc.) are
-installed automatically by `basilisk` the first time the analysis pipeline is
-invoked. This one-time setup may take a few minutes; subsequent calls use the
-cached environment instantly.
-
-### Appendix: manual Python environment setup
-
-`basilisk`'s automatic provisioning is normally sufficient and no manual
-setup is required. On some systems — for example, some Linux configurations
-without a working conda toolchain, or HPC/cluster environments where
-`basilisk` cannot provision its own environment — you may need to create and
-point at a Python environment yourself. See the "Manual Python environment
-setup" section under Development in the package
-[README](https://github.com/rotsl/grayleafspotr#manual-python-environment-setup)
-for step-by-step instructions, including why the environment should be
-created outside the package directory.
+`basilisk` installs Python dependencies when you first run the analysis
+pipeline. For setup details and manual configuration, see
+[Developer note: Python override](#developer-note-python-override).
 
 ---
 
-## 3. Bundled example data
+## Bundled example data
 
 The package ships three pre-computed example results so that all plotting and
 data-wrangling functions can be explored without running the full pipeline.
 
-### 3.1 Load the example run
+### Load the example run
 
 ```{r load-example-run}
 example_run <- example_grayleafspot_results()
 ```
 
-### 3.2 Inspect the feature table
+### Inspect the feature table
 
 ```{r inspect-feature-table}
 example_run$results[, c("filename", "day", "area_mm2", "diameter_mm",
                          "circularity", "crack_coverage_pct", "qc_status")]
 ```
 
-### 3.3 Locate bundled source images
+### Locate bundled source images
 
 The three plate photographs used to generate this example are also included in
 the package and are accessible via `system.file()`:
@@ -189,7 +174,7 @@ list.files(image_dir)
 
 ---
 
-## 4. Template visualisations
+## Template visualisations
 
 Every plotting function accepts a `grayleafspot_run` object and returns a
 `ggplot2` object that can be customised with standard `ggplot2` calls.
@@ -214,7 +199,7 @@ plot_growth_roughness(example_run)
 ### Crack coverage and count
 
 Proportion of the colony mask classified as cracked tissue, alongside the
-total crack count — a proxy for structural stress.
+total crack count, a proxy for structural stress.
 
 ```{r plot-stress-remodeling}
 plot_stress_remodeling(example_run)
@@ -257,7 +242,7 @@ plot_radial_profile(example_run)
 
 ---
 
-## 5. Work with tidy data
+## Work with tidy data
 
 Convert the run object to a plain data frame for any downstream workflow:
 
@@ -274,7 +259,7 @@ on additional components:
 ```{r custom-plot}
 plot_colony_expansion(example_run) +
   ggplot2::labs(
-    title    = "Colony expansion — 06-FEB experiment",
+    title    = "Colony expansion: 06-FEB experiment",
     subtitle = "WT strain, PCBM substrate"
   ) +
   ggplot2::theme_classic()
@@ -282,9 +267,9 @@ plot_colony_expansion(example_run) +
 
 ---
 
-## 6. Analyze your own images
+## Analyze your own images
 
-### 6.1 Prepare your image folder
+### Prepare your image folder
 
 Place all plate photographs for one experiment in a single directory. The
 filename must contain a `d\d+` token that encodes the imaging day:
@@ -297,13 +282,12 @@ my_experiment/
 └── ...
 ```
 
-The chunks below run the real pipeline against the three bundled 06FEB test
-images (`inst/extdata/testdata/06FEB/`) in place of `my_experiment/`, so this
-vignette demonstrates the full, working code path. If a working
-`basilisk`/Python environment is not available when this vignette is built,
-these chunks are skipped and a message is shown instead.
+The examples below use the three bundled 06FEB test images
+(`inst/extdata/testdata/06FEB/`) in place of `my_experiment/`. When the
+Python availability check returns `FALSE`, the vignette shows the code
+without running these chunks.
 
-### 6.2 Run the analysis — simple entry point
+### Run the analysis: simple entry point
 
 `grayleafspot_run()` is the recommended entry point for most users. It
 returns the raw JSON payload as a named list.
@@ -312,45 +296,33 @@ returns the raw JSON payload as a named list.
 img_dir <- system.file("extdata", "testdata", "06FEB", package = "grayleafspotr")
 out_dir <- file.path(tempdir(), "grayleafspotr-workflow-demo")
 
-res <- tryCatch(
-  grayleafspot_run(
-    input_dir  = img_dir,
-    output_dir = out_dir,
-    run_name   = "isolate_A"
-  ),
-  error = function(e) {
-    message("Pipeline unavailable in this build environment: ", conditionMessage(e))
-    NULL
-  }
+res <- grayleafspot_run(
+  input_dir  = img_dir,
+  output_dir = out_dir,
+  run_name   = "isolate_A"
 )
 
 res$results   # per-image feature table (data frame)
 res$run       # run manifest
 ```
 
-### 6.3 Full-featured alternative: `grayleafspot_analyze()`
+### Full-featured alternative: `grayleafspot_analyze()`
 
 `grayleafspot_analyze()` returns a `grayleafspot_run` S3 object with direct
 access to the template plots:
 
 ```{r run-full-featured, eval=py_ok}
-run <- tryCatch(
-  grayleafspot_analyze(
-    input_dir  = img_dir,
-    output_dir = out_dir,
-    run_name   = "isolate_A_analyze",
-    verbose    = FALSE
-  ),
-  error = function(e) {
-    message("Pipeline unavailable in this build environment: ", conditionMessage(e))
-    NULL
-  }
+run <- grayleafspot_analyze(
+  input_dir  = img_dir,
+  output_dir = out_dir,
+  run_name   = "isolate_A_analyze",
+  verbose    = FALSE
 )
 
-if (!is.null(run)) plot_colony_expansion(run)
+plot_colony_expansion(run)
 ```
 
-### 6.4 Visual QC: overlay detected ROIs on the source image
+### Visual QC: overlay detected ROIs on the source image
 
 `plot_grayleafspot_overlay()` draws the detected dish boundary (yellow),
 colony outline (red), and crack segments (cyan) on top of the original
@@ -358,46 +330,48 @@ photograph, using `EBImage`. This directly answers "did the pipeline segment
 what I expect?" without having to trust the summary statistics alone:
 
 ```{r visualize-overlay, eval=py_ok}
-if (!is.null(run)) {
-  image_file <- list.files(img_dir, full.names = TRUE)[1]
-  plot_grayleafspot_overlay(run, image_path = image_file)
-}
+image_file <- list.files(img_dir, full.names = TRUE)[1]
+plot_grayleafspot_overlay(run, image_path = image_file)
 ```
 
-### 6.5 Reload saved results
+### Reload saved results
 
 Every run writes outputs to a timestamped sub-folder. Reload a previous run
 without re-running the pipeline:
 
 ```{r reload-saved-results, eval=py_ok}
-if (!is.null(run)) {
-  saved_dir <- run$run$outputDir
-  if (is.null(saved_dir)) saved_dir <- run$run$output_dir
-  reloaded <- read_grayleafspot_results(saved_dir)
-  plot_colony_expansion(reloaded)
-}
+saved_dir <- run$run$output_dir
+reloaded <- read_grayleafspot_results(saved_dir)
+plot_colony_expansion(reloaded)
 ```
 
 ---
 
-## 7. Developer note: Python override
+## Developer note: Python override
 
-Normal users do not need to configure Python. Developers maintaining a local
-virtual environment can bypass basilisk by setting:
+`basilisk` installs NumPy, OpenCV, PyTorch, scikit-image, and the other
+Python dependencies on the first pipeline call. Setup may take a few minutes;
+subsequent calls use the cached environment.
+
+If `basilisk` cannot create an environment on your system, you can set up one
+manually. This may be necessary on some Linux systems or HPC clusters. Follow
+the [manual Python environment setup instructions in the README](https://github.com/rotsl/grayleafspotr#manual-python-environment-setup).
+Create the environment outside the package directory so development tools do
+not have to scan its contents.
+
+To use an existing environment, set the path to its Python interpreter:
 
 ```r
-# ~/.Rprofile — developer use only
+# ~/.Rprofile: optional Python override
 Sys.setenv(GRAYLEAFSPOTR_PYTHON = "/path/to/rvenv/bin/python")
 ```
 
 When `GRAYLEAFSPOTR_PYTHON` is set, the pipeline uses that interpreter
-directly instead of the basilisk-managed environment. See the "Manual Python
-environment setup" section under Development in the package README for how
-to create such an environment.
+instead of the basilisk-managed environment.
 
 ---
 
-## References
+## References {-}
 
 Related datasets and software, by the same author:
 
@@ -410,7 +384,7 @@ Related datasets and software, by the same author:
 
 ---
 
-## Session information
+## Session information {-}
 
 ```{r session-info}
 sessionInfo()
