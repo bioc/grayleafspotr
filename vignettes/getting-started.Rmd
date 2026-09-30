@@ -14,11 +14,9 @@ knitr::opts_chunk$set(echo = TRUE, message = FALSE, warning = FALSE,
                       fig.width = 7, fig.height = 4.5)
 library(grayleafspotr)
 
-# Whether the basilisk-managed Python pipeline is available in this build
-# environment. This is a cheap presence check (it does not itself trigger
-# environment provisioning); the chunks below additionally wrap the actual
-# pipeline call in tryCatch() so a `basilisk`-present-but-broken environment
-# degrades gracefully instead of failing the vignette build.
+# Gate the pipeline chunks with a presence check. For the default environment,
+# this checks that basilisk is installed without provisioning Python.
+# Errors from an evaluated pipeline call stop the vignette build.
 py_ok <- tryCatch(
   grayleafspot_python_available(engine_model = "localunet"),
   error = function(e) FALSE
@@ -35,9 +33,9 @@ folder of plate photographs, the package:
 - extracts area, shape, texture, and crack-coverage features for each image,
 - returns a tidy data frame ready for plotting and statistical analysis.
 
-Python dependencies are handled automatically by `basilisk` — no manual setup
-is needed. For visual quality control, `plot_grayleafspot_overlay()` uses the
-Bioconductor `EBImage` package to draw the detected dish boundary, colony
+`basilisk` handles Python dependencies automatically, so you do not need to
+set up Python yourself. For visual quality control, `plot_grayleafspot_overlay()`
+uses the Bioconductor `EBImage` package to draw the detected dish boundary, colony
 outline, and crack segments directly on the source photograph, so automated
 segmentation results can be checked against the original image rather than
 trusted as an opaque summary statistic.
@@ -99,7 +97,7 @@ df
 ## Analyze your own images
 
 Point `grayleafspot_run()` at a folder of plate photographs. The pipeline
-runs automatically — no Python configuration required. The chunks below run
+uses the basilisk-managed Python environment. The chunks below run
 the real pipeline against the three bundled 06FEB test images
 (`inst/extdata/testdata/06FEB/`) so this vignette demonstrates the full,
 working code path rather than a snippet you can't execute.
@@ -108,13 +106,7 @@ working code path rather than a snippet you can't execute.
 img_dir <- system.file("extdata", "testdata", "06FEB", package = "grayleafspotr")
 out_dir <- file.path(tempdir(), "grayleafspotr-run-demo")
 
-res <- tryCatch(
-  grayleafspot_run(input_dir = img_dir, output_dir = out_dir, run_name = "demo"),
-  error = function(e) {
-    message("Pipeline unavailable in this build environment: ", conditionMessage(e))
-    NULL
-  }
-)
+res <- grayleafspot_run(input_dir = img_dir, output_dir = out_dir, run_name = "demo")
 
 # Per-image feature table
 res$results
@@ -126,15 +118,11 @@ res$run
 For plotting support, use `grayleafspot_analyze()` instead:
 
 ```{r analyze-own-images, eval=py_ok}
-run_own <- tryCatch(
-  grayleafspot_analyze(input_dir = img_dir, output_dir = out_dir,
-                        run_name = "demo-analyze", verbose = FALSE),
-  error = function(e) {
-    message("Pipeline unavailable in this build environment: ", conditionMessage(e))
-    NULL
-  }
+run_own <- grayleafspot_analyze(
+  input_dir = img_dir, output_dir = out_dir,
+  run_name = "demo-analyze", verbose = FALSE
 )
-if (!is.null(run_own)) plot_colony_expansion(run_own)
+plot_colony_expansion(run_own)
 ```
 
 ### Visualize detected regions of interest
@@ -144,10 +132,8 @@ colony outline (red), and crack segments (cyan) on top of the original
 image, using `EBImage`:
 
 ```{r visualize-overlay, eval=py_ok}
-if (!is.null(run_own)) {
-  image_file <- list.files(img_dir, full.names = TRUE)[1]
-  plot_grayleafspot_overlay(run_own, image_path = image_file)
-}
+image_file <- list.files(img_dir, full.names = TRUE)[1]
+plot_grayleafspot_overlay(run_own, image_path = image_file)
 ```
 
 ### Reload saved results
@@ -155,12 +141,9 @@ if (!is.null(run_own)) {
 Outputs are written to a timestamped folder and can be reloaded later:
 
 ```{r reload-saved-results, eval=py_ok}
-if (!is.null(run_own)) {
-  saved_dir <- run_own$run$outputDir
-  if (is.null(saved_dir)) saved_dir <- run_own$run$output_dir
-  reloaded <- read_grayleafspot_results(saved_dir)
-  plot_colony_expansion(reloaded)
-}
+saved_dir <- run_own$run$output_dir
+reloaded <- read_grayleafspot_results(saved_dir)
+plot_colony_expansion(reloaded)
 ```
 
 ---
@@ -178,7 +161,7 @@ See the **grayleafspotr Workflow** vignette for:
 vignette("grayleafspotr-workflow", package = "grayleafspotr")
 ```
 
-## Session information
+## Session information {-}
 
 ```{r session-info}
 sessionInfo()

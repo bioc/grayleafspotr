@@ -1,5 +1,20 @@
 # grayleafspotr News
 
+## grayleafspotr 0.99.8
+
+### Documentation fixes
+
+* Addressed Sai's vignette review in Bioconductor/BiocContributions#39.
+  Removed manual section numbers from the workflow vignette so BiocStyle
+  handles numbering. Marked Abstract, References, and Session information
+  headings as unnumbered where present.
+* Simplified the analysis, overlay, and reload examples in both vignettes by
+  removing visible error handlers and null checks. Python examples retain
+  `eval=py_ok`; reload examples use the pipeline's `output_dir` field.
+* Moved Python setup guidance to the workflow's developer note and linked
+  to it from Installation. Updated build comments and skipped-chunk guidance
+  to match the examples, and revised punctuation for consistency.
+
 ## grayleafspotr 0.99.7
 
 ### Bug fixes
