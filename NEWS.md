@@ -1,5 +1,13 @@
 # grayleafspotr News
 
+## grayleafspotr 0.99.9
+
+### Continuous integration fixes
+
+* Refreshed the Ubuntu package index before installing pkgdown workflow
+  dependencies. This avoids failed installs when a runner has an outdated
+  package index.
+
 ## grayleafspotr 0.99.8
 
 ### Documentation fixes
