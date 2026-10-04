@@ -1,5 +1,16 @@
 # grayleafspotr News
 
+## grayleafspotr 0.99.10
+
+### Build fixes
+
+* Check an explicitly configured `BASILISK_EXTERNAL_DIR` before running the
+  live Python examples in the vignettes. This prevents vignette builds from
+  failing when a build machine points basilisk to a cache directory that does
+  not exist.
+* Marked the Interoperability with Bioconductor heading as unnumbered, as
+  requested during the Bioconductor review.
+
 ## grayleafspotr 0.99.9
 
 ### Continuous integration fixes

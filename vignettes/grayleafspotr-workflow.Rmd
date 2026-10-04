@@ -20,13 +20,14 @@ knitr::opts_chunk$set(
 )
 library(grayleafspotr)
 
-# Gate the pipeline chunks with a presence check. For the default environment,
-# this checks that basilisk is installed without provisioning Python.
-# Errors from an evaluated pipeline call stop the vignette build.
-py_ok <- tryCatch(
-  grayleafspot_python_available(engine_model = "localunet"),
-  error = function(e) FALSE
-)
+# Gate the pipeline chunks with a presence check. If an external basilisk
+# cache is configured, it must exist before the live examples can run.
+basilisk_dir <- Sys.getenv("BASILISK_EXTERNAL_DIR", unset = "")
+py_ok <- (!nzchar(basilisk_dir) || dir.exists(basilisk_dir)) &&
+  tryCatch(
+    grayleafspot_python_available(engine_model = "localunet"),
+    error = function(e) FALSE
+  )
 ```
 
 ## Abstract {-}
@@ -50,7 +51,7 @@ passed to any downstream R analysis.
 Python dependencies are managed automatically through `basilisk`; no manual
 Python environment setup is required.
 
-### Interoperability with Bioconductor
+### Interoperability with Bioconductor {-}
 
 `grayleafspotr` integrates with the Bioconductor ecosystem in two ways.
 Python environment management uses `basilisk`, so the segmentation model runs
