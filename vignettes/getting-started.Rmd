@@ -14,13 +14,14 @@ knitr::opts_chunk$set(echo = TRUE, message = FALSE, warning = FALSE,
                       fig.width = 7, fig.height = 4.5)
 library(grayleafspotr)
 
-# Gate the pipeline chunks with a presence check. For the default environment,
-# this checks that basilisk is installed without provisioning Python.
-# Errors from an evaluated pipeline call stop the vignette build.
-py_ok <- tryCatch(
-  grayleafspot_python_available(engine_model = "localunet"),
-  error = function(e) FALSE
-)
+# Gate the pipeline chunks with a presence check. If an external basilisk
+# cache is configured, it must exist before the live examples can run.
+basilisk_dir <- Sys.getenv("BASILISK_EXTERNAL_DIR", unset = "")
+py_ok <- (!nzchar(basilisk_dir) || dir.exists(basilisk_dir)) &&
+  tryCatch(
+    grayleafspot_python_available(engine_model = "localunet"),
+    error = function(e) FALSE
+  )
 ```
 
 ## What is grayleafspotr?
