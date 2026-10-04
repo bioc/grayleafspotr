@@ -1,5 +1,11 @@
 # grayleafspotr News
 
+## grayleafspotr 0.99.11
+
+### Documentation fixes
+
+* Added the Bioconductor-assigned DOI to the package citation.
+
 ## grayleafspotr 0.99.10
 
 ### Build fixes

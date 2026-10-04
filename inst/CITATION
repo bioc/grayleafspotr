@@ -12,10 +12,11 @@ bibentry(
   ),
   year        = "2026",
   note        = sprintf("R package version %s", meta$Version),
+  doi         = "10.18129/B9.bioc.grayleafspotr",
   url         = "https://github.com/rotsl/grayleafspotr",
   textVersion = paste0(
     "Rohan R (2026). grayleafspotr: Quantitative Analysis of Gray Leaf Spot Colonies ",
     "from Plate Images. The Sainsbury Laboratory, Norwich. R package version ",
-    meta$Version, ". https://github.com/rotsl/grayleafspotr"
+    meta$Version, ". doi:10.18129/B9.bioc.grayleafspotr"
   )
 )
