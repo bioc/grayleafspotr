@@ -1,5 +1,13 @@
 # grayleafspotr News
 
+## grayleafspotr 0.99.12
+
+### Test fixes
+
+* Skip the end-to-end Python pipeline test when `BASILISK_EXTERNAL_DIR` is
+  explicitly set to a directory that does not exist. Package checks continue
+  to run the test on systems with a usable basilisk cache.
+
 ## grayleafspotr 0.99.11
 
 ### Documentation fixes
