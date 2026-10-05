@@ -9,6 +9,12 @@ test_that("bundled test images exist in inst/extdata/testdata/06FEB", {
 })
 
 test_that("grayleafspot_analyze runs end-to-end on bundled test images", {
+  basilisk_dir <- Sys.getenv("BASILISK_EXTERNAL_DIR", unset = "")
+  skip_if(
+    nzchar(basilisk_dir) && !dir.exists(path.expand(basilisk_dir)),
+    "Configured basilisk cache directory does not exist"
+  )
+
   skip_if_not(
     grayleafspot_python_available(engine_model = "localunet"),
     "Python ML dependencies not available"
