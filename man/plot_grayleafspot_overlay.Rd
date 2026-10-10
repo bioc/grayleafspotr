@@ -48,8 +48,10 @@ visually verify that automated segmentation and crack detection were
 computed as expected, rather than trusting the summary statistics alone.
 }
 \examples{
+\donttest{
 img_dir <- system.file("extdata", "testdata", "06FEB", package = "grayleafspotr")
 image_file <- list.files(img_dir, full.names = TRUE)[1]
 record <- grayleafspotr:::analyze_grayleafspot_image(image_file)
 overlay <- plot_grayleafspot_overlay(record)
+}
 }

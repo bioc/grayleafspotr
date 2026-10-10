@@ -21,9 +21,12 @@ knitr::opts_chunk$set(
 library(grayleafspotr)
 
 # Gate the pipeline chunks with a presence check. If an external basilisk
-# cache is configured, it must exist before the live examples can run.
+# cache is configured, it must exist before the live examples can run. Live
+# Python examples are not run on Bioconductor build machines.
+is_bioc_build <- identical(Sys.getenv("IS_BIOC_BUILD_MACHINE"), "true")
 basilisk_dir <- Sys.getenv("BASILISK_EXTERNAL_DIR", unset = "")
-py_ok <- (!nzchar(basilisk_dir) || dir.exists(basilisk_dir)) &&
+py_ok <- !is_bioc_build &&
+  (!nzchar(basilisk_dir) || dir.exists(basilisk_dir)) &&
   tryCatch(
     grayleafspot_python_available(engine_model = "localunet"),
     error = function(e) FALSE

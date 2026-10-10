@@ -1,5 +1,17 @@
 # grayleafspotr News
 
+## grayleafspotr 0.99.13
+
+### Build fixes
+
+* Skip live Python pipeline examples and the end-to-end Python test on
+  Bioconductor build machines. This avoids provisioning the large PyTorch
+  environment while building or checking the package; other environments,
+  including R-universe, continue to run the integration test.
+* Skip JPEG-dependent overlay tests when the platform image decoder is not
+  usable, and mark the long-running overlay example as `\donttest{}`. This
+  avoids failures caused by incompatible JPEG libraries on a build host.
+
 ## grayleafspotr 0.99.12
 
 ### Test fixes

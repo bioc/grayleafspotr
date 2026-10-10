@@ -3,16 +3,30 @@ if (!nzchar(testdata_dir)) {
   testdata_dir <- file.path("inst", "extdata", "testdata", "06FEB")
 }
 
-overlay_records <- if (dir.exists(testdata_dir)) {
-  image_files <- list.files(testdata_dir, full.names = TRUE)
-  lapply(image_files, analyze_grayleafspot_image)
+overlay_image_files <- if (dir.exists(testdata_dir)) {
+  list.files(testdata_dir, pattern = "\\.(jpg|jpeg|png)$", full.names = TRUE,
+             ignore.case = TRUE)
+} else {
+  character()
+}
+
+overlay_decoder_available <- length(overlay_image_files) > 0L && tryCatch(
+  {
+    EBImage::readImage(overlay_image_files[[1]])
+    TRUE
+  },
+  error = function(e) FALSE
+)
+
+overlay_records <- if (overlay_decoder_available) {
+  lapply(overlay_image_files, analyze_grayleafspot_image)
 } else {
   list()
 }
 
 test_that("plot_grayleafspot_overlay draws on a single analyzed record", {
   skip_if_not_installed("EBImage")
-  skip_if_not(length(overlay_records) > 0, "Test image directory not found")
+  skip_if_not(overlay_decoder_available, "Image decoder is not available")
 
   record <- overlay_records[[1]]
   original <- EBImage::readImage(record$imageUrl)
@@ -25,7 +39,7 @@ test_that("plot_grayleafspot_overlay draws on a single analyzed record", {
 
 test_that("plot_grayleafspot_overlay resolves a record by id from a raw_results list", {
   skip_if_not_installed("EBImage")
-  skip_if_not(length(overlay_records) > 1, "Test image directory not found")
+  skip_if_not(overlay_decoder_available, "Image decoder is not available")
 
   target <- overlay_records[[2]]
   overlay <- plot_grayleafspot_overlay(overlay_records, id = target$id)
