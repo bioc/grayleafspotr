@@ -84,10 +84,12 @@ grayleafspot_draw_polyline <- function(img, x_px, y_px, col, closed = TRUE) {
 #' @return An [EBImage::Image] with the requested overlays drawn on it.
 #'   Display with `EBImage::display()` or save with `EBImage::writeImage()`.
 #' @examples
+#' \donttest{
 #' img_dir <- system.file("extdata", "testdata", "06FEB", package = "grayleafspotr")
 #' image_file <- list.files(img_dir, full.names = TRUE)[1]
 #' record <- grayleafspotr:::analyze_grayleafspot_image(image_file)
 #' overlay <- plot_grayleafspot_overlay(record)
+#' }
 #' @export
 plot_grayleafspot_overlay <- function(run, id = NULL, image_path = NULL,
                                        show_dish = TRUE, show_colony = TRUE, show_cracks = TRUE,

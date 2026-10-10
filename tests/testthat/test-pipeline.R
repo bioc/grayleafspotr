@@ -9,6 +9,11 @@ test_that("bundled test images exist in inst/extdata/testdata/06FEB", {
 })
 
 test_that("grayleafspot_analyze runs end-to-end on bundled test images", {
+  skip_if(
+    identical(Sys.getenv("IS_BIOC_BUILD_MACHINE"), "true"),
+    "End-to-end Python pipeline is not run on Bioconductor build machines"
+  )
+
   basilisk_dir <- Sys.getenv("BASILISK_EXTERNAL_DIR", unset = "")
   skip_if(
     nzchar(basilisk_dir) && !dir.exists(path.expand(basilisk_dir)),
