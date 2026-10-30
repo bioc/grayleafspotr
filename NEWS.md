@@ -1,5 +1,12 @@
 # grayleafspotr News
 
+## grayleafspotr 0.99.15
+
+### Documentation updates
+
+* Removed the custom `inst/CITATION` file because Bioconductor supplies the
+  package citation automatically. Added the package DOI badge to the README.
+
 ## grayleafspotr 0.99.14
 
 ### Documentation fixes
