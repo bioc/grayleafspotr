@@ -4,6 +4,7 @@
 [![registry status badge](https://rotsl.r-universe.dev/badges/:registry)](https://rotsl.r-universe.dev/)
 [![articles status badge](https://rotsl.r-universe.dev/badges/:articles)](https://rotsl.r-universe.dev/articles)
 [![R-universe downloads](https://img.shields.io/badge/dynamic/json?url=https%3A%2F%2Frotsl.r-universe.dev%2Fapi%2Fpackages%2Fgrayleafspotr&query=%24._downloads.count&label=downloads&suffix=%20last%20month&color=blue)](https://rotsl.r-universe.dev/grayleafspotr)
+[![DOI](https://img.shields.io/badge/DOI-10.18129%2FB9.bioc.grayleafspotr-blue.svg)](https://doi.org/10.18129/B9.bioc.grayleafspotr)
 
 `grayleafspotr` is an R package for quantitative gray leaf spot analysis. The
 public interface is R; the segmentation pipeline runs through a bundled
