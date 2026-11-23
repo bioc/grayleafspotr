@@ -1,6 +1,6 @@
 Package: grayleafspotr
 Title: Quantitative Analysis of Gray Leaf Spot Colonies from Plate Images
-Version: 0.99.15
+Version: 1.0.0
 Authors@R: person(
   given = "Rohan",
   family = "R",
